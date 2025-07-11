@@ -4,25 +4,24 @@ pragma solidity ^0.8.0;
 /// @notice Library for deploying contracts using Safe's Singleton Factory
 ///         https://github.com/safe-global/safe-singleton-factory
 /// @dev This version is for use in contracts (no VM cheat codes)
-library SafeSingletonDeployer {
+abstract contract SafeSingletonDeployer {
     error DeployFailed();
 
     address constant SAFE_SINGLETON_FACTORY = 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7;
 
-    function computeAddress(bytes memory creationCode, bytes32 salt) public pure returns (address) {
-        return computeAddress(creationCode, "", salt);
+    function computeSafeSingletonAddress(bytes memory creationCode, bytes32 salt) public pure returns (address) {
+        return computeSafeSingletonAddress(creationCode, "", salt);
     }
 
-    function computeAddress(bytes memory creationCode, bytes memory args, bytes32 salt) public pure returns (address) {
+    function computeSafeSingletonAddress(bytes memory creationCode, bytes memory args, bytes32 salt)
+        public
+        pure
+        returns (address)
+    {
         bytes32 initCodeHash = _hashInitCode(creationCode, args);
-        return address(uint160(uint256(
-            keccak256(abi.encodePacked(
-                bytes1(0xff),
-                SAFE_SINGLETON_FACTORY,
-                salt,
-                initCodeHash
-            ))
-        )));
+        return address(
+            uint160(uint256(keccak256(abi.encodePacked(bytes1(0xff), SAFE_SINGLETON_FACTORY, salt, initCodeHash))))
+        );
     }
 
     function deploy(bytes memory creationCode, bytes memory args, bytes32 salt) internal returns (address) {
@@ -33,16 +32,19 @@ library SafeSingletonDeployer {
         return _deploy(creationCode, "", salt);
     }
 
-    function safeDeploy(bytes memory creationCode, bytes memory args, bytes32 salt) internal returns (address) {
-        address predicted = computeAddress(creationCode, args, salt);
+    function safeSingletonDeploy(bytes memory creationCode, bytes memory args, bytes32 salt)
+        internal
+        returns (address)
+    {
+        address predicted = computeSafeSingletonAddress(creationCode, args, salt);
         if (predicted.code.length > 0) {
             return predicted;
         }
         return _deploy(creationCode, args, salt);
     }
 
-    function safeDeploy(bytes memory creationCode, bytes32 salt) internal returns (address) {
-        address predicted = computeAddress(creationCode, salt);
+    function safeSingletonDeploy(bytes memory creationCode, bytes32 salt) internal returns (address) {
+        address predicted = computeSafeSingletonAddress(creationCode, salt);
         if (predicted.code.length > 0) {
             return predicted;
         }

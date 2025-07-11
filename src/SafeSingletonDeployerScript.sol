@@ -12,11 +12,15 @@ library SafeSingletonDeployerScript {
     address constant SAFE_SINGLETON_FACTORY = 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7;
     VmSafe private constant VM = VmSafe(address(uint160(uint256(keccak256("hevm cheat code")))));
 
-    function computeAddress(bytes memory creationCode, bytes32 salt) public pure returns (address) {
-        return computeAddress(creationCode, "", salt);
+    function computeSafeSingletonAddress(bytes memory creationCode, bytes32 salt) public pure returns (address) {
+        return computeSafeSingletonAddress(creationCode, "", salt);
     }
 
-    function computeAddress(bytes memory creationCode, bytes memory args, bytes32 salt) public pure returns (address) {
+    function computeSafeSingletonAddress(bytes memory creationCode, bytes memory args, bytes32 salt)
+        public
+        pure
+        returns (address)
+    {
         return VM.computeCreate2Address({
             salt: salt,
             initCodeHash: _hashInitCode(creationCode, args),
@@ -34,7 +38,6 @@ library SafeSingletonDeployerScript {
         return _deploy(creationCode, "", salt);
     }
 
-
     function broadcastDeploy(uint256 deployerKey, bytes memory creationCode, bytes memory args, bytes32 salt)
         internal
         returns (address)
@@ -43,16 +46,16 @@ library SafeSingletonDeployerScript {
         return _deploy(creationCode, args, salt);
     }
 
-    function broadcastDeploy(uint256 deployerKey, bytes memory creationCode, bytes32 salt)
-        internal
-        returns (address)
-    {
+    function broadcastDeploy(uint256 deployerKey, bytes memory creationCode, bytes32 salt) internal returns (address) {
         VM.broadcast(deployerKey);
         return _deploy(creationCode, "", salt);
     }
 
-    function safeBroadcastDeploy(bytes memory creationCode, bytes memory args, bytes32 salt) internal returns (address) {
-        address predicted = computeAddress(creationCode, args, salt);
+    function trySafeSingletonBroadcastDeploy(bytes memory creationCode, bytes memory args, bytes32 salt)
+        internal
+        returns (address)
+    {
+        address predicted = computeSafeSingletonAddress(creationCode, args, salt);
         if (predicted.code.length > 0) {
             return predicted;
         }
@@ -60,8 +63,8 @@ library SafeSingletonDeployerScript {
         return _deploy(creationCode, args, salt);
     }
 
-    function safeBroadcastDeploy(bytes memory creationCode, bytes32 salt) internal returns (address) {
-        address predicted = computeAddress(creationCode, salt);
+    function trySafeSingletonBroadcastDeploy(bytes memory creationCode, bytes32 salt) internal returns (address) {
+        address predicted = computeSafeSingletonAddress(creationCode, salt);
         if (predicted.code.length > 0) {
             return predicted;
         }
@@ -69,11 +72,13 @@ library SafeSingletonDeployerScript {
         return _deploy(creationCode, "", salt);
     }
 
-    function safeBroadcastDeploy(uint256 deployerKey, bytes memory creationCode, bytes memory args, bytes32 salt)
-        internal
-        returns (address)
-    {
-        address predicted = computeAddress(creationCode, args, salt);
+    function trySafeSingletonBroadcastDeploy(
+        uint256 deployerKey,
+        bytes memory creationCode,
+        bytes memory args,
+        bytes32 salt
+    ) internal returns (address) {
+        address predicted = computeSafeSingletonAddress(creationCode, args, salt);
         if (predicted.code.length > 0) {
             return predicted;
         }
@@ -81,11 +86,11 @@ library SafeSingletonDeployerScript {
         return _deploy(creationCode, args, salt);
     }
 
-    function safeBroadcastDeploy(uint256 deployerKey, bytes memory creationCode, bytes32 salt)
+    function trySafeSingletonBroadcastDeploy(uint256 deployerKey, bytes memory creationCode, bytes32 salt)
         internal
         returns (address)
     {
-        address predicted = computeAddress(creationCode, salt);
+        address predicted = computeSafeSingletonAddress(creationCode, salt);
         if (predicted.code.length > 0) {
             return predicted;
         }
@@ -94,12 +99,15 @@ library SafeSingletonDeployerScript {
     }
 
     /// @dev Allows calling without Forge broadcast
-    function deploy(bytes memory creationCode, bytes memory args, bytes32 salt) internal returns (address) {
+    function deploySafeSingleton(bytes memory creationCode, bytes memory args, bytes32 salt)
+        internal
+        returns (address)
+    {
         return _deploy(creationCode, args, salt);
     }
 
     /// @dev Allows calling without Forge broadcast
-    function deploy(bytes memory creationCode, bytes32 salt) internal returns (address) {
+    function deploySafeSingleton(bytes memory creationCode, bytes32 salt) internal returns (address) {
         return _deploy(creationCode, "", salt);
     }
 
